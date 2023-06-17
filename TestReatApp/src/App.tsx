@@ -12,7 +12,7 @@ function App() {
         <Routes>
           <Route path='/' element={<HomePage/>}/>
           <Route path='/shape' element={<ShapePage/>}/>
-          <Route path='/form' element={<FormPage/>}/>
+          <Route path='/form/:idPage' element={<FormPage/>}/>
         </Routes>
       </BrowserRouter>
     </>
