@@ -9,6 +9,7 @@ import { AiFillCaretDown, AiFillCaretUp } from "react-icons/ai";
 import { FaEdit } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { CValidation, useAutoValidate } from "../hook/useAutoValidate";
+import { useNavigate, useParams } from "react-router-dom";
 
 type Prop = {
     maxLength: number;
@@ -19,39 +20,60 @@ type paginationList = {
     isSelected: boolean;
     startIndex: number;
     stopIndex: number;
+    id: string;
 }
 
 const PaginationSlecter = ({ maxLength, selectPage }: Prop) => {
 
+        //react router dom
+        const navigate = useNavigate();
+        const { idPage  } = useParams();
+
     let selectList: paginationList[] = [];
+    const [pageNumber, setPageNumber] = useState<paginationList[]>([...selectList]);
     const maxItemInTable = 3; //ค่าสูงสุดของ แถว table 
-    for (let i = 0; i < maxLength; i++) {
-        if (i === 0) {
-            let select = { isSelected: false, startIndex: 0, stopIndex: 2 }
-            selectList.push(select);
-        } else {
-            if (i % maxItemInTable === 0) {
-                let select = { isSelected: false, startIndex: i, stopIndex: i + (maxItemInTable - 1) < maxLength ? i + (maxItemInTable - 1) : maxLength }
+
+    const calculatePage = () => {
+        selectList = [];
+        for (let i = 0; i < maxLength; i++) {
+            if (i === 0) {
+                let select = { isSelected: false, startIndex: 0, stopIndex: 2, id: uuidv4() }
                 selectList.push(select);
+                if(maxLength === 1){
+                    setPageNumber(selectList);
+                    return;
+                }
+            } else {
+                if (i % maxItemInTable === 0) {
+                    let select = { isSelected: false, id: uuidv4(), startIndex: i, stopIndex: i + (maxItemInTable - 1) < maxLength ? i + (maxItemInTable - 1) : maxLength }
+                    selectList.push(select);
+                }
             }
         }
-    }
-    //if no last index
-    if (selectList.filter(x => x.stopIndex === maxLength).length === 0) {
-        const beforeLastIndex = selectList[selectList.length - 1].stopIndex;
-        let select = { isSelected: false, startIndex: beforeLastIndex + 1 > maxLength ? maxLength : beforeLastIndex + 1, stopIndex: maxLength }
-        selectList.push(select);
+        //if no last index
+        if (selectList.filter(x => x.stopIndex === maxLength).length === 0) {
+            const beforeLastIndex = selectList[selectList.length - 1].stopIndex;
+            let select = { isSelected: false, id: uuidv4(), startIndex: beforeLastIndex + 1 > maxLength ? maxLength : beforeLastIndex + 1, stopIndex: maxLength }
+            selectList.push(select);
+        }
+        console.log(selectList)
+        setPageNumber(selectList);
     }
 
-    const [pageNumber, setPageNumber] = useState<paginationList[]>([...selectList]);
+    
+
+    useEffect(() => {
+        calculatePage();
+    }, [maxLength]);
 
     return (<>
         {
             pageNumber.map((x, i) =>
-                <PaginationItem key={i} isActive={x.isSelected}
+                <PaginationItem key={x.id} isActive={ idPage ? i ===  Number(idPage):false}
                     onClick={() => {
                         selectPage(x.startIndex, x.stopIndex);
                         setPageNumber(x => x.map((xx, ii) => ii === i ? { ...xx, isSelected: true } : { ...xx, isSelected: false }));
+                        navigate("/form/"+i);
                     }}>{i}</PaginationItem >)
         }
     </>)
@@ -61,6 +83,8 @@ export default function FormPage() {
 
     const dispatcher = useAppDispatch();
     const persons = useSelector(personSelecter);
+
+
 
     //state form
     const [id, setId] = useState('');
@@ -394,7 +418,11 @@ export default function FormPage() {
                             <PaginationContainer>
                                 {/*<PaginationShiftLeft>&lt;</PaginationShiftLeft>*/}
                                 {persons.length !== 0 ? <PaginationSelecter>
-                                    <PaginationSlecter maxLength={persons.length} selectPage={(start, stop) => dispatcher(pagination({ indexStart: start, indexStop: stop }))} />
+                                    <PaginationSlecter maxLength={persons.length}
+                                        selectPage={(start, stop) => {
+                                            dispatcher(pagination({ indexStart: start, indexStop: stop }));
+                                            //window.location.reload();
+                                        }} />
                                 </PaginationSelecter> : <></>}
                                 {/*<PaginationShiftRight>&gt;</PaginationShiftRight>*/}
                             </PaginationContainer>
