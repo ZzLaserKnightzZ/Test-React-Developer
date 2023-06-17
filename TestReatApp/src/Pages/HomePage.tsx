@@ -28,7 +28,7 @@ export default function HomePage() {
                         <HomePageTitle>{t("Test2")}</HomePageTitle>
                         <HomePageDescription>{t("API")}</HomePageDescription>
                     </HomePageBox>
-                    <HomePageBox to={"/form"}>
+                    <HomePageBox to={"/form/0"}>
                         <HomePageTitle>{t("Test3")}</HomePageTitle>
                         <HomePageDescription>{t("FormManage")}</HomePageDescription>
                     </HomePageBox>
